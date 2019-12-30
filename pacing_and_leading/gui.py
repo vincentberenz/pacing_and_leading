@@ -13,20 +13,21 @@ class PacingAndLeading:
                  mediator_display=True):
 
         # creating the main figure
-        self._figure = plt.figure()
-        self._figure.set_dpi(dpi)
-        self._figure.set_size(experiment.width,
-                              experiment.height)
+        figsize = (experiment.width/dpi ,
+                   experiment.height/dpi)
+        self._figure = plt.figure(figsize=figsize,
+                                  dpi=dpi)
 
         # setting the cursor motion callback
-        self._figure.canvas.mpl_connect('cursor_motion',
+        self._figure.canvas.mpl_connect("motion_notify_event",
                                         self.mouse_move)
         
-        self._axis = plt.axes(xlim=(0,width),
-                              ylim=(0,height))
+        self._axis = plt.axes(xlim=(0,experiment.width),
+                              ylim=(0,experiment.height))
         
         # middle of main figure
-        self._center = [width/2,height/2]
+        self._center = [experiment.width/2,
+                        experiment.height/2]
 
         # will return for each iteration the
         # position of each circle to draw
@@ -62,14 +63,21 @@ class PacingAndLeading:
                                                   self.animate,
                                                   interval=1000.0/experiment.frequency,
                                                   blit=True)
+
+    def run(self):
+
+        plt.show()
         
     def mouse_move(self,event):
 
+        if not event.inaxes:
+            return
+        
         self._cursor_position = [event.xdata,
-                        event.ydata]
+                                 event.ydata]
         
         
-    def animate(self,None):
+    def animate(self,args):
 
         circles = self._experiment.update(self._cursor_position)
 
@@ -85,7 +93,7 @@ class PacingAndLeading:
         for circle,draw_circle in zip(circles,self._draw_circles):
             draw(circle,draw_circle)
 
-            
+        return self._draw_circles
         
         
 

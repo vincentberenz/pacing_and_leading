@@ -1,6 +1,6 @@
 import time,math
-import .geometry as geometry
-import .control as control
+from ..pacing_and_leading import geometry
+from ..pacing_and_leading import control
     
 
 """ The mediator is the (visible) circle that tries to influence the user's behavior

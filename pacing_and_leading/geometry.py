@@ -16,4 +16,4 @@ def norm(v):
     returns norm of vector v
     """
     
-    return math.sqrt(sum([a**2 for a in v])
+    return math.sqrt(sum([a**2 for a in v]))

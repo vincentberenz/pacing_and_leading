@@ -3,11 +3,16 @@ import copy
 
 class _Circle:
 
-    def __init__(self,position,size,color):
+    def __init__(self,name,position,size,color):
+        self.name = name
         self.position = copy.deepcopy(position)
         self.size = copy.deepcopy(size)
         self.color = copy.deepcopy(color)
 
+    def __str__(self):
+        return str(self.name)+"\t"+str(self.position)
+        
+        
 
 class Circle :
 
@@ -19,20 +24,28 @@ class Circle :
     e.g. position of the user's cursor
     """
     
-    def __init__(self,update_function):
+    def __init__(self,
+                 name,
+                 update_function,
+                 init_position=[0,0]):
 
-        self._position = None
+        self._name = name
+        self._position = init_position
         self._size = None 
         self._color = None # None means transparent
         self._update_function = update_function
 
+    def __str__(self):
+        return str(self._name)+":\t"+str(self._position)
+        
     def get_position(self):
         
         return copy.deepcopy(self._position)
 
     def get(self):
 
-        return _Circle(self._position,
+        return _Circle(self._name,
+                       self._position,
                        self._size,
                        self._color)
     

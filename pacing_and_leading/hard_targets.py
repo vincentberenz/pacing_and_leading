@@ -1,6 +1,6 @@
 import time,math
-import .geometry as geometry
-import .control as control
+from ..pacing_and_leading import geometry
+from ..pacing_and_leading import control
 
 
 """ The hard target is the (typically) invisible circle representing the 
@@ -37,7 +37,7 @@ class WaypointsHardTarget :
         self._velocity = velocity
         self._waypoints = waypoints
         self._position = self._waypoints[0]
-        self._previous_waypoints = self._waypoints[0]
+        self._previous_waypoint = self._waypoints[0]
         self._previous_time = None
         self._index = 1
         self._size = size

@@ -1,4 +1,4 @@
-
+from ..pacing_and_leading import display
 
 
 class _World:
@@ -33,10 +33,10 @@ class Experiment:
         
         # Circle is simply an holder for position,size(radius) and color
         # + an update function
-        self._soft_target = display.Circle(soft_target)
-        self._hard_target = display.Circle(hard_target)
-        self._mediator = display.Circle(mediator)
-        self._cursor = display.Circle(cursor)
+        self._soft_target = display.Circle("soft_target",soft_target)
+        self._hard_target = display.Circle("hard_target",hard_target)
+        self._mediator = display.Circle("mediator",mediator)
+        self._cursor = display.Circle("cursor",cursor)
 
         # All circles that needs management
         self._circles = [self._soft_target,
@@ -59,7 +59,7 @@ class Experiment:
 
         # each circle calls its own update function, to
         # update position,size and color
-        for circle in self._circles():
+        for circle in self._circles:
             circle.update(world)
 
         # returning for each circle an instance with attributes

@@ -1,6 +1,6 @@
 import time,math
-import .geometry as geometry
-import .control as control
+from ..pacing_and_leading import geometry
+from ..pacing_and_leading import control
     
 
 """ The soft target is an intermediate position between the user cursor
