@@ -93,7 +93,8 @@ class PacingAndLeading:
         for circle,draw_circle in zip(circles,self._draw_circles):
             draw(circle,draw_circle)
 
-        return self._draw_circles
+        return [c for c in  self._draw_circles
+                if c is not None]
         
         
 

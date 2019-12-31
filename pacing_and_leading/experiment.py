@@ -8,7 +8,7 @@ class _World:
         self.cursor = None
         self.soft_target = None
         self.hard_target = None
-        
+        self.similarity = None
 
 
 class Experiment:
@@ -18,6 +18,7 @@ class Experiment:
                  width,
                  height,
                  background,
+                 similarity,
                  soft_target,
                  mediator,
                  hard_target,
@@ -30,6 +31,11 @@ class Experiment:
         self.width = width
         self.height = height
         self.background = background
+
+        # how much is the user motion (i.e. motion of the cursor)
+        # similar to the hard target motion ?
+        # should return a score between 0 (dissimilar) and 1 (identical)
+        self._similarity = similarity
         
         # Circle is simply an holder for position,size(radius) and color
         # + an update function
@@ -39,8 +45,8 @@ class Experiment:
         self._cursor = display.Circle("cursor",cursor)
 
         # All circles that needs management
-        self._circles = [self._soft_target,
-                         self._hard_target,
+        self._circles = [self._hard_target,
+                         self._soft_target,
                          self._mediator,
                          self._cursor]
         
@@ -56,7 +62,9 @@ class Experiment:
         world.cursor = cursor
         world.soft_target = self._soft_target.get_position()
         world.hard_target = self._hard_target.get_position()
-
+        world.similarity = self._similarity(world.cursor,
+                                            world.hard_target)
+        
         # each circle calls its own update function, to
         # update position,size and color
         for circle in self._circles:
