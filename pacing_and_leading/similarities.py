@@ -1,16 +1,36 @@
 from ..pacing_and_leading import control
 from ..pacing_and_leading import geometry
 
+class DistanceSimilarity:
+
+    def __init__(self,max_distance):
+
+        self._max = max_distance
+
+    def __call__(self,cursor,hard_target):
+
+        if cursor is None:
+            return None
+
+        if hard_target is None:
+            return None
+
+        d = geometry.distance(cursor,hard_target)
+
+        d = min(d,self._max)
+
+        return 1.0 - d / self._max
+
 class WeightedVelocitySimilarity:
 
-    def __init__(self,weight_direction=0.5,
+    def __init__(self,weight_angle=0.5,
                  weight_norm=0.5,max_velocity=200):
 
         self._velocity_cursor = control.Velocity()
         self._velocity_hard_target = control.Velocity()
-        self._weight_direction = weight_direction
+        self._weight_direction = weight_angle
         self._weight_norm = weight_norm
-        self._weights  = weight_norm + weight_direction
+        self._weights  = weight_norm + weight_angle
         self._max_velocity = max_velocity
 
     def __call__(self,cursor,hard_target):
@@ -36,8 +56,8 @@ class WeightedVelocitySimilarity:
 
         n = self._weight_norm*norm_similarity
         a = self._weight_direction*angle_similarity
-        return (a+n)/self._weights
-
+        sim = (a+n)/self._weights
+        return sim
 
 class ProductVelocitySimilarity:
 

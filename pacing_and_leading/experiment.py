@@ -1,5 +1,5 @@
 from ..pacing_and_leading import display
-
+from ..pacing_and_leading import geometry
 
 class _World:
 
@@ -53,6 +53,7 @@ class Experiment:
 
         # for logging on exit
         self._similarities = []
+        self._distances = []
         self._data_file = data_file
         
         
@@ -73,6 +74,9 @@ class Experiment:
 
         # for plotting on exit
         self._similarities.append(world.similarity)
+        if world.cursor is not None and world.hard_target is not None:
+            self._distances.append(geometry.distance(world.cursor,
+                                                     world.hard_target))
         
         # each circle calls its own update function, to
         # update position,size and color
@@ -94,7 +98,8 @@ class Experiment:
 
         with open(self._data_file,"w+") as f:
             f.write(repr(similarities))
-
+            f.write('\n')
+            f.write(repr(self._distances))
             
     @classmethod
     def plot_results(self,data_file):
@@ -102,7 +107,10 @@ class Experiment:
         with open(data_file,"r") as f:
             data = f.read()
 
-        similarities = eval(data)
+        similarities,distances = data.split('\n')
+            
+        similarities = eval(similarities)
+        distances = eval(distances)
 
         import matplotlib.pyplot as plt
 
@@ -110,5 +118,14 @@ class Experiment:
         y = similarities
 
         plt.scatter(x,y)
+        plt.title("similarities")
         plt.show()
-                  
+
+        x = range(len(distances))
+        y = distances
+
+        plt.scatter(x,y)
+        plt.title("distances")
+        plt.show()
+
+        

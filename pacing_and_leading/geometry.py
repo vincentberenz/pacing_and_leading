@@ -34,3 +34,9 @@ def dot(v1,v2):
     return sum([a*b
                 for a,b in zip(v1_,v2_)])
 
+def linear_combination(weight_vectors):
+    s = len(weight_vectors[0][1])
+    weighted = [[w*a for a in v]
+                for w,v in weight_vectors]
+    w = [sum([a[i] for a in weighted]) for i in range(s)]
+    return w

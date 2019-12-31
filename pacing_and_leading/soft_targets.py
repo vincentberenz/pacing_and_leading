@@ -66,6 +66,7 @@ class SimilaritySoftTarget:
 
     def __init__(self,
                  similarity_average_period,
+                 invert,
                  size=None,
                  color=None):
 
@@ -75,6 +76,7 @@ class SimilaritySoftTarget:
             self._similarities = None
         self._color = color
         self._size = size
+        self._invert = invert
         
     def __call__(self,world):
 
@@ -87,7 +89,10 @@ class SimilaritySoftTarget:
 
         if self._similarities is not None:
             similarity = self._similarities.get(similarity)
-        
+
+        if self._invert:
+            similarity = 1.0-similarity
+            
         v = [ht-c for ht,c in
              zip(hard_target,cursor)]
         norm_v = geometry.norm(v)
