@@ -23,6 +23,10 @@ if __name__ == "__main__":
     background = (1,1,1)
     dpi=100
 
+    # logging file. Currently only logging the
+    # similarity (cf below)
+    data_file = "/tmp/pacing_and_leading"
+    
     # ---------- similarity computation ---------- #
 
     # see similarities.py for code
@@ -76,7 +80,7 @@ if __name__ == "__main__":
     velocity = 100.0
     size = 40
     color = (1,0,0)
-    hard_target_display=True
+    hard_target_display=False
     hard_target = WaypointsHardTarget(waypoints,
                                       velocity,
                                       size=size,
@@ -96,6 +100,8 @@ if __name__ == "__main__":
 
     # set soft_target_display=True to see the soft target.
     # In experiment, expected value is False 
+
+    # see soft_targets.py for code
     
     size = 40
     color = (0,1,0)
@@ -137,6 +143,8 @@ if __name__ == "__main__":
     # The motion of the mediator is strongly related to the soft target
     # (see above). In practice, the mediator "follows" the soft target,
     # with some delay.
+
+    # see mediators.py for code
     
     size = 40
     color = (0,0,1)
@@ -164,8 +172,8 @@ if __name__ == "__main__":
     # value averaging the similarity over x seconds (similarity_average_period,
     # which can be set to None for no averaging)
     
-    kp_min = 0.1
-    kp_max = 1.4
+    kp_min = 0.4
+    kp_max = 2.0
     similarity_average_period=None
     mediator = SimilarityMediator(similarity_average_period,
                                   kp_min,kp_max,
@@ -177,12 +185,26 @@ if __name__ == "__main__":
     # What the user moves on the screen with
     # the mouse
 
-    # 1 --- BasicCursor
-    # A simple circle
+    # see cursors.py for code
     
     size = 40
-    color = (0,1,1)
-    cursor = BasicCursor(size,color)
+    
+    # 1 --- BasicCursor
+    # A simple circle 
+    
+    #color = (0,1,1)
+    #cursor = BasicCursor(size,color)
+
+    # 2 --- VelocityCursor
+    # A circle which color changes depending on the velocity
+    # of the cursor. Idea is to encourage at least some motion
+    # from the user.
+
+    velocity_threshold=10
+    color_slow = (0.9,1,0.9)
+    color_fast = (0,1,0)
+    cursor = VelocityCursor(size,color_slow,color_fast,
+                            velocity_threshold)
 
     
     # ---------- experiment code, do not touch ---------- #
@@ -195,10 +217,16 @@ if __name__ == "__main__":
                             soft_target,
                             mediator,
                             hard_target,
-                            cursor)
+                            cursor,
+                            data_file)
 
     gui = PacingAndLeading(experiment,dpi,
                            hard_target_display=hard_target_display,
                            soft_target_display=soft_target_display,
                            mediator_display=mediator_display)
     gui.run()
+
+    experiment.save()
+
+    Experiment.plot_results(data_file)
+

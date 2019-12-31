@@ -22,7 +22,8 @@ class Experiment:
                  soft_target,
                  mediator,
                  hard_target,
-                 cursor):
+                 cursor,
+                 data_file):
 
         # frequency of display update
         self.frequency = frequency
@@ -49,6 +50,11 @@ class Experiment:
                          self._soft_target,
                          self._mediator,
                          self._cursor]
+
+        # for logging on exit
+        self._similarities = []
+        self._data_file = data_file
+        
         
     def update(self,cursor):
 
@@ -64,6 +70,9 @@ class Experiment:
         world.hard_target = self._hard_target.get_position()
         world.similarity = self._similarity(world.cursor,
                                             world.hard_target)
+
+        # for plotting on exit
+        self._similarities.append(world.similarity)
         
         # each circle calls its own update function, to
         # update position,size and color
@@ -74,3 +83,32 @@ class Experiment:
         # position, size and color
         return [ circle.get()
                  for circle in self._circles ]
+
+    
+    def save(self):
+
+        print("saving results in",self._data_file)
+        
+        similarities = [s for s in self._similarities
+                        if s is not None]
+
+        with open(self._data_file,"w+") as f:
+            f.write(repr(similarities))
+
+            
+    @classmethod
+    def plot_results(self,data_file):
+
+        with open(data_file,"r") as f:
+            data = f.read()
+
+        similarities = eval(data)
+
+        import matplotlib.pyplot as plt
+
+        x = range(len(similarities))
+        y = similarities
+
+        plt.scatter(x,y)
+        plt.show()
+                  
