@@ -3,31 +3,8 @@ from ..pacing_and_leading import geometry
 from ..pacing_and_leading import control
 
 
-""" The hard target is the (typically) invisible circle representing the 
-    desired motion of the user, i.e. during a successful experiment the 
-    user would move to keep the cursor on top of the hard target
-
-    This module contains a collection of different hard targets that can be selected
-    for an experiment.
-
-    @copyright Copyright (c) 2020 Max Planck Gesellschaft
-    @author Vincent Berenz
-
-"""
-
 class WaypointsHardTarget :
 
-    """ this hard target moves from one waypoint to the other,
-        at constant speed
-
-        Args: 
-           kp : list of waypoints
-           velocity : in pixels per second
-           size : in pixels
-           color : color (None if invisible)
-    """
-
-    
     def __init__(self,
                  waypoints,
                  velocity,

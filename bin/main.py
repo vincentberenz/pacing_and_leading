@@ -9,10 +9,55 @@ from ..pacing_and_leading.composite import Composite
 from ..pacing_and_leading import geometry
 
 
+# What this is about
+
+# On execution, you should see 4 circles:
+#
+# * Green is the cursor. It moves according to the user mouse motion
+#
+# * Red is the hard target. It represents the desired motion the software want
+#   to convince the user of doing. It is not visible during user experiment
+#
+# * Blue is the mediator. It is the tool used by the software to influence
+#   the motion of the user. In Apollo experiment, this is the robot hand.
+#
+# * Yellow is the soft target. The mediator moves (more or less fast) to the
+#   soft target. If the soft target aligns with the cursor, then the mediator
+#   will apply a purely reactive motion (in regards to the user motion).
+#   If the soft target aligns with the hard target, the mediator applies a
+#   non reactive feed forward motion, i.e. it does not react at all to the
+#   user motion. Typically the soft target will be in between.
+#
+# Also during the experiment, a similarity score between the cursor and the
+# hard target motions is continuously computed. 1 means identical motion,
+# 0 dissimilar motion. Typically motion of the soft target is a function
+# of the similarity score
+#
+# The code below computes the position of all circles above for each iteration.
+# It is meant to be flexible, e.g. it is easy to modify computation of the
+# similarity, of the soft target, etc.
+# It is possible to modify the experiment quite a lot just be playing with
+# the configuration. See inline comments.
+# It is also possible (and simple) to create new functions for computing
+# all circles positions and similarities. See existing code for example.
+# Note that also positions of circles and similarity can be a linear combination
+# of functions. See calls to "Composite" in code below
+#
+# At the end of the experiment (i.e. when the window is closed),
+# are displayed : similarity as function of time, and distance
+# cursor/hard target as function of time
+#
+
 if __name__ == "__main__":
 
     # ---------- window and experiment config ---------- #
 
+    # if True: everything displayed, including what the user
+    # should not see (hard target, soft target)
+    # if False : only the cursor and the mediator are shown,
+    # i.e mode that should be used for experiment
+    DISPLAY_ALL=True
+    
     # to be used in future for logging
     USER_ID = 0
 
@@ -74,13 +119,14 @@ if __name__ == "__main__":
     product_velocity_similarity=ProductVelocitySimilarity()
 
 
-    # --- final result -> change the weights for fine tuning
+    # --- final result is a linear combination
+    # of all similarities functions, 
+    # -> change the weights for fine tuning
 
-    similarity = Composite( ( (0.5,distance_similarity),
-                              (0.5,weighted_velocity_similarity),
+    similarity = Composite( ( (0.7,distance_similarity),
+                              (0.3,weighted_velocity_similarity),
                               (0.0,product_velocity_similarity) ) )
-    
-    similarity = weighted_velocity_similarity
+
     
     # ---------- hard target motion ---------- #
 
@@ -104,10 +150,10 @@ if __name__ == "__main__":
     # constant speed between predefined waypoints
     
     waypoints = [ [300,200] , [1200,500] ]
-    velocity = 100.0
+    velocity = 300.0
     size = 40
     color = (1,0,0)
-    hard_target_display=False
+    hard_target_display=DISPLAY_ALL
     waypoints_hard_target = WaypointsHardTarget(waypoints,
                                                 velocity,
                                                 size=size,
@@ -116,7 +162,7 @@ if __name__ == "__main__":
     # --- final result
 
     hard_target = Composite( [ (1.0,waypoints_hard_target) ] )
-    hard_target = waypoints_hard_target
+
     
     # ---------- soft target motion ---------- #
 
@@ -135,8 +181,8 @@ if __name__ == "__main__":
     # see soft_targets.py for code
     
     size = 40
-    color = (0,1,0)
-    soft_target_display=False
+    color = (1,1,0)
+    soft_target_display=DISPLAY_ALL
 
     # soft target is a mix of:
     
@@ -147,7 +193,7 @@ if __name__ == "__main__":
     # as time goes by. change "duration" to make this transition
     # slower or faster
     
-    duration = 180
+    duration = 120
     time_drifting_soft_target = TimeDriftingSoftTarget(duration,
                                                        size=size,
                                                        color=color)
@@ -165,7 +211,7 @@ if __name__ == "__main__":
     # value averaging the similarity over x seconds (similarity_average_period,
     # which can be set to None for no averaging)
 
-    similarity_average_period=1
+    similarity_average_period=20 # the similarity averaged over 20 iterations is used
     invert = False
     similarity_soft_target = SimilaritySoftTarget(similarity_average_period,
                                                   invert,
@@ -174,10 +220,9 @@ if __name__ == "__main__":
 
     # --- final result, change weights for fine tuning
 
-    soft_target = Composite( ( (0.5,time_drifting_soft_target),
-                               (0.5,similarity_soft_target) ) )
+    soft_target = Composite( ( (0.6,time_drifting_soft_target),
+                               (0.4,similarity_soft_target) ) )
 
-    soft_target = similarity_soft_target
     
     # ---------- mediator ---------- #
 
@@ -203,14 +248,14 @@ if __name__ == "__main__":
     # proportional controller over the speed.
     # The higher the gain (kp), the faster the motion.
     
-    kp = 0.7
+    kp = 1.0
     linear_mediator = LinearMediator(kp,size,color)
 
     # 2 --- SimilarityMediator
     
     # The mediator goes toward the soft target using a
     # proportional controller over the speed.
-    # The gain changes with the similarity between the
+    # The gain change with the similarity between the
     # cursor and the hard target motions.
     # The more similar, the higher the gain (and the faster
     # the mediator motion).
@@ -221,17 +266,16 @@ if __name__ == "__main__":
     
     kp_min = 0.3
     kp_max = 1.2
-    similarity_average_period=1
+    similarity_average_period=20
     similarity_mediator = SimilarityMediator(similarity_average_period,
                                              kp_min,kp_max,
-                                  size,color)
+                                             size,color)
 
 
     # -- final result:
 
-    mediator = Composite( ( (0.0,linear_mediator),
-                            (1.0,similarity_mediator) ) )
-    mediator = similarity_mediator
+    mediator = Composite( ( (1.0,linear_mediator),
+                            (0.0,similarity_mediator) ) )
     
     # ---------- cursor ---------- #
 
@@ -245,19 +289,19 @@ if __name__ == "__main__":
     # 1 --- BasicCursor
     # A simple circle 
     
-    #color = (0,1,1)
-    #cursor = BasicCursor(size,color)
+    color = (0,1,0)
+    cursor = BasicCursor(size,color)
 
     # 2 --- VelocityCursor
     # A circle which color changes depending on the velocity
     # of the cursor. Idea is to encourage at least some motion
     # from the user.
 
-    velocity_threshold=10
-    color_slow = (1.0,1,1.0)
-    color_fast = (0,1,0)
-    cursor = VelocityCursor(size,color_slow,color_fast,
-                            velocity_threshold)
+    #velocity_threshold=10
+    #color_slow = (1.0,1,1.0)
+    #color_fast = (0,1,0)
+    #cursor = VelocityCursor(size,color_slow,color_fast,
+    #                        velocity_threshold)
 
     
     # ---------- experiment code, do not touch ---------- #

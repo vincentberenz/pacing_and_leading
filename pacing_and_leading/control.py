@@ -7,12 +7,6 @@ def linear_controller( previous_time,
                        target_position,
                        kp ):
 
-    """
-    Linear controller over velocity
-    Returns:
-        updated previous time, next position 
-    """
-    
     t = time.time()
     if previous_time is None:
         return t,current_position

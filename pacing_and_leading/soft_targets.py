@@ -4,19 +4,6 @@ from ..pacing_and_leading import geometry
 from ..pacing_and_leading import control
     
 
-""" The soft target is an intermediate position between the user cursor
-    and the hard target. It is likely to be the virtual point the 
-    mediator goes toward. 
-
-    This module contains a collection of soft targets that can be selected
-    for an experiment.
-
-    @copyright Copyright (c) 2020 Max Planck Gesellschaft
-    @author Vincent Berenz
-
-"""
-
-
 class TimeDriftingSoftTarget:
 
     """ Moves from the user cursor to the 
@@ -43,7 +30,7 @@ class TimeDriftingSoftTarget:
         hard_target = world.hard_target
 
         if delta_t > self._duration :
-            return hard_target
+            return hard_target,self._size,self._color
 
         v = [ht-c for ht,c in
              zip(hard_target,cursor)]
