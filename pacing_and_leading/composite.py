@@ -18,7 +18,6 @@ class Composite:
         if arg2 is None:
             # for positions (vectors)
             r = self._instances[0][1](arg1)
-            print(self._instances[0][1],r)
             _,size,color = r
             weighted_vectors = [[i[0],i[1](arg1)[0]] for i in self._instances]
             value =  geometry.linear_combination(weighted_vectors)

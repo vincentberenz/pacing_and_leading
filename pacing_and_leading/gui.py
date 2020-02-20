@@ -10,7 +10,8 @@ class PacingAndLeading:
                  dpi,
                  hard_target_display=False,
                  soft_target_display=False,
-                 mediator_display=True):
+                 mediator_display=True,
+                 vertical_targets_display=True):
 
         # creating the main figure
         figsize = (experiment.width/dpi ,
@@ -45,19 +46,35 @@ class PacingAndLeading:
                 return circle
             else :
                 return None
-        
+            
+        def _gen_vertical_bar(display):
+            if not display:
+                return None
+            rectangle = plt.Rectangle((0,experiment.height),
+                                      3,
+                                      experiment.height,
+                                      angle=0.0,
+                                      fill=True)
+            self._axis.add_patch(rectangle)
+            return rectangle
+            
         self._hard_target = _gen_circle(hard_target_display)
         self._soft_target = _gen_circle(soft_target_display)
         self._mediator = _gen_circle(mediator_display)
         self._cursor = _gen_circle(True)
-
-        # not that the order is the same as of
+        self._vertical_target1 = _gen_vertical_bar(vertical_targets_display)
+        self._vertical_target2 = _gen_vertical_bar(vertical_targets_display)
+        
+        # note that the order is the same as of
         # Experiment._circles
         self._draw_circles = [self._hard_target,
                               self._soft_target,
                               self._mediator,
                               self._cursor]
 
+        self._draw_vertical_targets = [self._vertical_target1,
+                                       self._vertical_target2]
+        
         # management of the animation by matplotlib
         self._animation = animation.FuncAnimation(self._figure,
                                                   self.animate,
@@ -79,9 +96,9 @@ class PacingAndLeading:
         
     def animate(self,args):
 
-        circles = self._experiment.update(self._cursor_position)
+        circles,vertical_targets = self._experiment.update(self._cursor_position)
 
-        def draw(circle,draw_circle):
+        def circle_draw(circle,draw_circle):
             if draw_circle is None:
                 return
             draw_circle.center = circle.position
@@ -91,10 +108,31 @@ class PacingAndLeading:
             return
 
         for circle,draw_circle in zip(circles,self._draw_circles):
-            draw(circle,draw_circle)
+            circle_draw(circle,draw_circle)
 
-        return [c for c in  self._draw_circles
-                if c is not None]
+        def vertical_target_draw(vertical_target,
+                                 draw_vertical_target):
+            if draw_vertical_target is None:
+                return
+            xy = (vertical_target.position[0],vertical_target.position[1])
+            draw_vertical_target.set_xy(xy)
+            draw_vertical_target.set_width(vertical_target.size)
+            draw_vertical_target.fill=True
+            draw_vertical_target.set_color(vertical_target.color)
+            return
+
+        for circle,draw_circle in zip(circles,self._draw_circles):
+            circle_draw(circle,draw_circle)
+
+        for vertical_target,draw_vertical_target in zip(vertical_targets,
+                                                        self._draw_vertical_targets):
+            vertical_target_draw(vertical_target,draw_vertical_target)
+
+        r  = [c for c in  self._draw_circles
+              if c is not None] + [vt for vt in self._draw_vertical_targets
+                                   if vt is not None]
+
+        return r
         
         
 

@@ -2,6 +2,7 @@ from ..pacing_and_leading.gui import PacingAndLeading
 from ..pacing_and_leading.mediators import *
 from ..pacing_and_leading.hard_targets import *
 from ..pacing_and_leading.soft_targets import *
+from ..pacing_and_leading.vertical_targets import get_vertical_targets
 from ..pacing_and_leading.cursors import *
 from ..pacing_and_leading.similarities import *
 from ..pacing_and_leading.experiment import Experiment
@@ -56,11 +57,14 @@ if __name__ == "__main__":
     # should not see (hard target, soft target)
     # if False : only the cursor and the mediator are shown,
     # i.e mode that should be used for experiment
-    DISPLAY_ALL=True
+    DISPLAY_ALL=False
     
     # to be used in future for logging
     USER_ID = 0
 
+    # if vertical target bars are to be used, set to True
+    VERTICAL_TARGETS = True
+    
     # frequency of main program iteration
     frequency = 300
 
@@ -276,7 +280,38 @@ if __name__ == "__main__":
 
     mediator = Composite( ( (1.0,linear_mediator),
                             (0.0,similarity_mediator) ) )
-    
+
+    # ---------- vertical targets ---------- #
+
+    # 2 vertical bars are here to give a motivation to the
+    # user to move (from one bar to the others). Colors
+    # of the bars change to indicate which bar the user should
+    # point towards
+
+    if VERTICAL_TARGETS:
+
+        # all attributes of the targets (color, position, etc)
+        # are hard coded in "get_vertical_targets"
+
+        # x1 and x2 correspond of the position of the vertical target
+        # on the x axis in pixels
+
+        # (values below chosen to match waypoints of hard target)
+        x1 = 300
+        x2 = 1200
+
+        color_active = (0,0,0) # black
+        color_inactive = (0.8,0.8,0.8) # gray
+        
+        vertical_targets = get_vertical_targets(x1,x2,
+                                                color_active,
+                                                color_inactive,
+                                                width,height)
+
+    else :
+
+        vertical_targets = None
+        
     # ---------- cursor ---------- #
 
     # What the user moves on the screen with
@@ -315,12 +350,14 @@ if __name__ == "__main__":
                             mediator,
                             hard_target,
                             cursor,
+                            vertical_targets,
                             data_file)
 
     gui = PacingAndLeading(experiment,dpi,
                            hard_target_display=hard_target_display,
                            soft_target_display=soft_target_display,
-                           mediator_display=mediator_display)
+                           mediator_display=mediator_display,
+                           vertical_targets_display=VERTICAL_TARGETS)
     gui.run()
 
     experiment.save()

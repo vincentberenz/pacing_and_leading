@@ -12,7 +12,13 @@ class _Circle:
     def __str__(self):
         return str(self.name)+"\t"+str(self.position)
         
-        
+
+class _VerticalLine(_Circle):
+
+    def __init__(self,name,position,size,color):
+
+        _Circle.__init__(name,position,size,color)
+
 
 class Circle :
 
@@ -54,4 +60,31 @@ class Circle :
         self._position,self._size,self._color = self._update_function(world)
     
 
+class VerticalLine(Circle) :
 
+    """ generic class for all moving circles in the world
+        
+    Args:      
+    update_function : compute the position, size and color
+    of the circle depending of the current state of the world,
+    e.g. position of the user's cursor
+    """
+    
+    def __init__(self,
+                 name,
+                 vertical_target,
+                 init_position=[0,0]):
+
+        Circle.__init__(self,
+                        name,
+                        vertical_target,
+                        vertical_target.get_position())
+        self._vertical_target = vertical_target
+        
+    def get_source(self):
+        
+        return self._vertical_target
+        
+    def update(self,world):
+
+        self._position,self._size,self._color = self._update_function(world)

@@ -9,7 +9,7 @@ class _World:
         self.soft_target = None
         self.hard_target = None
         self.similarity = None
-
+        self.vertical_targets = []
 
 class Experiment:
 
@@ -23,6 +23,7 @@ class Experiment:
                  mediator,
                  hard_target,
                  cursor,
+                 vertical_targets,
                  data_file):
 
         # frequency of display update
@@ -44,13 +45,28 @@ class Experiment:
         self._hard_target = display.Circle("hard_target",hard_target)
         self._mediator = display.Circle("mediator",mediator)
         self._cursor = display.Circle("cursor",cursor)
-
+        
         # All circles that needs management
         self._circles = [self._hard_target,
                          self._soft_target,
                          self._mediator,
                          self._cursor]
+        
+        # if target bars are to be used, adding them.
+        # All parameters currently hard coded here
+        if vertical_targets:
+            self._vertical_target_left = display.VerticalLine("vertical_target_left",
+                                                              vertical_targets[0])
 
+            self._vertical_target_right = display.VerticalLine("vertical_target_right",
+                                                              vertical_targets[1])
+            self._vertical_bars = [self._vertical_target_left,
+                                   self._vertical_target_right]
+
+        else :
+            self._vertical_bars = []
+
+        
         # for logging on exit
         self._similarities = []
         self._distances = []
@@ -64,14 +80,16 @@ class Experiment:
 
         # world is the (read only) shared memory
         # providing all info required for the update
-        # of each circle
+        # of each circle and each vertical target (if any)
         world  = _World()
         world.cursor = cursor
         world.soft_target = self._soft_target.get_position()
         world.hard_target = self._hard_target.get_position()
         world.similarity = self._similarity(world.cursor,
                                             world.hard_target)
-
+        world.vertical_targets = [vb.get_source()
+                                 for vb in self._vertical_bars]
+        
         # for plotting on exit
         self._similarities.append(world.similarity)
         if world.cursor is not None and world.hard_target is not None:
@@ -83,10 +101,17 @@ class Experiment:
         for circle in self._circles:
             circle.update(world)
 
-        # returning for each circle an instance with attributes
+        # each vertical target calls its own update function
+        # as well
+        for vertical_bar in self._vertical_bars:
+            vertical_bar.update(world)
+            
+        # returning for each circle/vertical bar an instance with attributes
         # position, size and color
         return [ circle.get()
-                 for circle in self._circles ]
+                 for circle in self._circles ], [vb.get()
+                                                 for vb in self._vertical_bars]
+
 
     
     def save(self):
