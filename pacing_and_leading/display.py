@@ -3,11 +3,12 @@ import copy
 
 class _Circle:
 
-    def __init__(self,name,position,size,color):
+    def __init__(self,name,position,size,color,x_shift=0):
         self.name = name
         self.position = copy.deepcopy(position)
         self.size = copy.deepcopy(size)
         self.color = copy.deepcopy(color)
+        self.x_shift = x_shift
 
     def __str__(self):
         return str(self.name)+"\t"+str(self.position)
@@ -19,6 +20,19 @@ class _VerticalLine(_Circle):
 
         _Circle.__init__(name,position,size,color)
 
+
+class _Arrow:
+
+    def __init__(self,
+                 name,
+                 position,
+                 delta,
+                 color):
+
+        self.name = name
+        self.position = position
+        self.delta = delta
+        self.color = color
 
 class Circle :
 
@@ -40,7 +54,8 @@ class Circle :
         self._size = None 
         self._color = None # None means transparent
         self._update_function = update_function
-
+        self._x_shift=0
+        
     def __str__(self):
         return str(self._name)+":\t"+str(self._position)
         
@@ -53,11 +68,16 @@ class Circle :
         return _Circle(self._name,
                        self._position,
                        self._size,
-                       self._color)
+                       self._color,
+                       x_shift=self._x_shift)
     
     def update(self,world):
 
-        self._position,self._size,self._color = self._update_function(world)
+        values = self._update_function(world)
+        try:
+            self._position,self._size,self._color,self._x_shift = values
+        except:
+            self._position,self._size,self._color = values
     
 
 class VerticalLine(Circle) :
@@ -88,3 +108,29 @@ class VerticalLine(Circle) :
     def update(self,world):
 
         self._position,self._size,self._color = self._update_function(world)
+
+
+class Arrow:
+
+    def __init__(self,
+                 name,
+                 update_function):
+
+        self._name = name
+        self._update_function = update_function
+        self._position = (0,0)
+        self._delta = (0,0)
+        self._color = None
+
+    def get(self):
+
+        return _Arrow(self._name,
+                      self._position,
+                      self._delta,
+                      self._color)
+        
+    def update(self,world):
+
+        self._position,self._delta,self._color = self._update_function(world)
+
+    

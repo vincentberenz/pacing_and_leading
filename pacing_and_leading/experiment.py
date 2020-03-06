@@ -10,7 +10,8 @@ class _World:
         self.hard_target = None
         self.similarity = None
         self.vertical_targets = []
-
+        self.arrows = []
+        
 class Experiment:
 
     def __init__(self,
@@ -24,6 +25,7 @@ class Experiment:
                  hard_target,
                  cursor,
                  vertical_targets,
+                 arrows,
                  data_file):
 
         # frequency of display update
@@ -66,6 +68,14 @@ class Experiment:
         else :
             self._vertical_bars = []
 
+        if arrows:
+
+            self._arrows = [ display.Arrow("arrow_"+str(index),arrow)
+                             for index,arrow in enumerate(arrows) ]
+
+        else :
+
+            self._arrows = []
         
         # for logging on exit
         self._similarities = []
@@ -98,19 +108,24 @@ class Experiment:
         
         # each circle calls its own update function, to
         # update position,size and color
-        for circle in self._circles:
-            circle.update(world)
+        list ( map(lambda c: c.update(world), self._circles) )
 
         # each vertical target calls its own update function
         # as well
-        for vertical_bar in self._vertical_bars:
-            vertical_bar.update(world)
-            
+        list ( map(lambda vb: vb.update(world), self._vertical_bars) )
+
+        # same for arrows
+        list ( map(lambda a: a.update(world), self._arrows) )
+        
         # returning for each circle/vertical bar an instance with attributes
         # position, size and color
         return [ circle.get()
-                 for circle in self._circles ], [vb.get()
-                                                 for vb in self._vertical_bars]
+                 for circle
+                 in self._circles ], [vb.get()
+                                      for vb
+                                      in self._vertical_bars] , [a.get()
+                                                                 for a
+                                                                 in self._arrows]
 
 
     

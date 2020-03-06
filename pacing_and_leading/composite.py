@@ -1,3 +1,4 @@
+import copy
 from ..pacing_and_leading import geometry
 
 class Composite:
@@ -14,12 +15,25 @@ class Composite:
             if v is None:
                 return 0
             return v
+
+        def _get_position(i):
+            r = i(arg1)
+            try :
+                position,_,_,x_shift = r
+                p = copy.deepcopy(position)
+                p[0]+=x_shift
+                return p
+            except:
+                return r[0]
         
         if arg2 is None:
             # for positions (vectors)
             r = self._instances[0][1](arg1)
-            _,size,color = r
-            weighted_vectors = [[i[0],i[1](arg1)[0]] for i in self._instances]
+            try:
+                _,size,color = r
+            except:
+                _,size,color,_ = r
+            weighted_vectors = [[i[0],_get_position(i[1])] for i in self._instances]
             value =  geometry.linear_combination(weighted_vectors)
             return [v/self._total_weights for v in value],size,color
         else :

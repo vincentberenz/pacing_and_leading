@@ -5,13 +5,14 @@ from ..pacing_and_leading import control
 
 class LinearMediator :
 
-    def __init__(self,kp,size,color,position=(0,0)):
+    def __init__(self,kp,size,color,position=(0,0),x_shift=0):
         
         self._kp = kp
         self._position = position
         self._size = size
         self._color = color
         self._previous_time = None
+        self._x_shift = x_shift
 
     # assumes world as a soft target attribute
     def __call__(self,world):
@@ -22,7 +23,7 @@ class LinearMediator :
                                        soft_target,
                                        self._kp)
         self._previous_time,self._position = v
-        return self._position,self._size,self._color
+        return self._position,self._size,self._color,self._x_shift
 
 
 
@@ -30,7 +31,8 @@ class LinearMediator :
 class SimilarityMediator:
 
     def __init__(self,similarity_average_period,
-                 kp_min,kp_max,size,color,position=(0,0)):
+                 kp_min,kp_max,size,color,position=(0,0),
+                 x_shift=0):
 
         if similarity_average_period is not None:
             self._similarities = control.Averager(similarity_average_period)
@@ -42,7 +44,8 @@ class SimilarityMediator:
         self._kp_range = kp_max-kp_min
         self._position = position
         self._previous_time=None
-
+        self._x_shift = x_shift
+        
     def __call__(self,world):
 
         similarity = world.similarity
@@ -62,7 +65,7 @@ class SimilarityMediator:
                                        kp)
         self._previous_time,self._position = v
         
-        return self._position,self._size,self._color
+        return self._position,self._size,self._color,self._x_shift
         
         
                 
