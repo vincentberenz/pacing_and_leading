@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
@@ -11,7 +12,8 @@ class PacingAndLeading:
                  hard_target_display=False,
                  soft_target_display=False,
                  mediator_display=True,
-                 vertical_targets_display=True):
+                 vertical_targets_display=True,
+                 arrows_display=4):
 
         # creating the main figure
         figsize = (experiment.width/dpi ,
@@ -25,6 +27,7 @@ class PacingAndLeading:
         
         self._axis = plt.axes(xlim=(0,experiment.width),
                               ylim=(0,experiment.height))
+        plt.gca().set_aspect('equal',adjustable='box')
         
         # middle of main figure
         self._center = [experiment.width/2,
@@ -57,6 +60,11 @@ class PacingAndLeading:
                                       fill=True)
             self._axis.add_patch(rectangle)
             return rectangle
+
+        def _gen_arrow():
+            arrow = plt.arrow(0,0,0,0)
+            self._axis.add_patch(arrow)
+            return arrow
             
         self._hard_target = _gen_circle(hard_target_display)
         self._soft_target = _gen_circle(soft_target_display)
@@ -64,6 +72,10 @@ class PacingAndLeading:
         self._cursor = _gen_circle(True)
         self._vertical_target1 = _gen_vertical_bar(vertical_targets_display)
         self._vertical_target2 = _gen_vertical_bar(vertical_targets_display)
+        if arrows_display:
+            self._draw_arrows = [ _gen_arrow()
+                                  for _ in range(arrows_display) ]
+        
         
         # note that the order is the same as of
         # Experiment._circles
@@ -96,20 +108,22 @@ class PacingAndLeading:
         
     def animate(self,args):
 
-        circles,vertical_targets = self._experiment.update(self._cursor_position)
+        circles,vertical_targets,arrows = self._experiment.update(self._cursor_position)
 
         def circle_draw(circle,draw_circle):
             if draw_circle is None:
                 return
-            draw_circle.center = circle.position
+            display_position = copy.deepcopy(circle.position)
+            display_position[0] += circle.x_shift
+            draw_circle.center = display_position
             draw_circle.set_radius(circle.size)
             draw_circle.fill=True
             draw_circle.set_color(circle.color)
             return
 
-        for circle,draw_circle in zip(circles,self._draw_circles):
-            circle_draw(circle,draw_circle)
-
+        list ( map (lambda c,dc: circle_draw(c,dc),
+                    circles, self._draw_circles) )
+        
         def vertical_target_draw(vertical_target,
                                  draw_vertical_target):
             if draw_vertical_target is None:
@@ -121,16 +135,40 @@ class PacingAndLeading:
             draw_vertical_target.set_color(vertical_target.color)
             return
 
-        for circle,draw_circle in zip(circles,self._draw_circles):
-            circle_draw(circle,draw_circle)
+        list( map (lambda vt,dvt : vertical_target_draw(vt,dvt),
+                   vertical_targets, self._draw_vertical_targets) )
 
-        for vertical_target,draw_vertical_target in zip(vertical_targets,
-                                                        self._draw_vertical_targets):
-            vertical_target_draw(vertical_target,draw_vertical_target)
+        def remove_arrows(axis):
+            run = True
+            while run:
+                rm_patch = None
+                for patch in axis.patches:
+                    if patch.__class__.__name__=="FancyArrow":
+                        rm_patch = patch
+                        break
+                if rm_patch is None:
+                    run = False
+                else :
+                    axis.patches.remove(patch)
 
+        def arrow_draw(arrow):
+            display_arrow = plt.arrow(arrow.position[0],
+                                      arrow.position[1],
+                                      arrow.delta[0],
+                                      arrow.delta[1],
+                                      width=20)
+            display_arrow.set_color(arrow.color)
+            return display_arrow
+        
+        # arrows can not be updated, we need to recreate them 
+        remove_arrows(self._axis)
+        self._draw_arrows = list( map( lambda arrow: arrow_draw(arrow),
+                                       arrows ) )
+        
         r  = [c for c in  self._draw_circles
               if c is not None] + [vt for vt in self._draw_vertical_targets
-                                   if vt is not None]
+                                   if vt is not None] + [a for a in self._draw_arrows
+                                                         if a is not None]
 
         return r
         

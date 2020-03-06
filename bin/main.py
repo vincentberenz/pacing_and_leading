@@ -2,6 +2,7 @@ from ..pacing_and_leading.gui import PacingAndLeading
 from ..pacing_and_leading.mediators import *
 from ..pacing_and_leading.hard_targets import *
 from ..pacing_and_leading.soft_targets import *
+from ..pacing_and_leading.arrow import *
 from ..pacing_and_leading.vertical_targets import get_vertical_targets
 from ..pacing_and_leading.cursors import *
 from ..pacing_and_leading.similarities import *
@@ -57,20 +58,23 @@ if __name__ == "__main__":
     # should not see (hard target, soft target)
     # if False : only the cursor and the mediator are shown,
     # i.e mode that should be used for experiment
-    DISPLAY_ALL=False
+    DISPLAY_ALL=True
     
     # to be used in future for logging
     USER_ID = 0
 
     # if vertical target bars are to be used, set to True
-    VERTICAL_TARGETS = True
+    VERTICAL_TARGETS = False
+
+    # if arrows true, arrows poining to the soft target are added
+    ARROWS = True
     
     # frequency of main program iteration
     frequency = 300
 
     # config of the window
-    width = 1600
-    height = 1000
+    width = 6000
+    height = 3000
     background = (1,1,1)
     dpi=100
 
@@ -127,8 +131,8 @@ if __name__ == "__main__":
     # of all similarities functions, 
     # -> change the weights for fine tuning
 
-    similarity = Composite( ( (0.7,distance_similarity),
-                              (0.3,weighted_velocity_similarity),
+    similarity = Composite( ( (0.1,distance_similarity),
+                              (0.5,weighted_velocity_similarity),
                               (0.0,product_velocity_similarity) ) )
 
     
@@ -153,9 +157,9 @@ if __name__ == "__main__":
     # has the target moving at
     # constant speed between predefined waypoints
     
-    waypoints = [ [300,200] , [1200,500] ]
+    waypoints = [ [300,200] , [int(width/2.0)-300,500] ]
     velocity = 300.0
-    size = 40
+    size = 60
     color = (1,0,0)
     hard_target_display=DISPLAY_ALL
     waypoints_hard_target = WaypointsHardTarget(waypoints,
@@ -184,7 +188,7 @@ if __name__ == "__main__":
 
     # see soft_targets.py for code
     
-    size = 40
+    size = 60
     color = (1,1,0)
     soft_target_display=DISPLAY_ALL
 
@@ -197,7 +201,7 @@ if __name__ == "__main__":
     # as time goes by. change "duration" to make this transition
     # slower or faster
     
-    duration = 120
+    duration = 5
     time_drifting_soft_target = TimeDriftingSoftTarget(duration,
                                                        size=size,
                                                        color=color)
@@ -224,8 +228,8 @@ if __name__ == "__main__":
 
     # --- final result, change weights for fine tuning
 
-    soft_target = Composite( ( (0.6,time_drifting_soft_target),
-                               (0.4,similarity_soft_target) ) )
+    soft_target = Composite( ( (0.5,time_drifting_soft_target),
+                               (0.5,similarity_soft_target) ) )
 
     
     # ---------- mediator ---------- #
@@ -240,10 +244,14 @@ if __name__ == "__main__":
 
     # see mediators.py for code
     
-    size = 40
+    size = 60
     color = (0,0,1)
     mediator_display=True
 
+    # shift the display to the right
+    # (set to 0 to cancel)
+    x_shift = width/2.0
+    
     # final result is a mix between
     
     # 1 --- LinearMediator
@@ -253,7 +261,7 @@ if __name__ == "__main__":
     # The higher the gain (kp), the faster the motion.
     
     kp = 1.0
-    linear_mediator = LinearMediator(kp,size,color)
+    linear_mediator = LinearMediator(kp,size,color,x_shift=x_shift)
 
     # 2 --- SimilarityMediator
     
@@ -273,7 +281,7 @@ if __name__ == "__main__":
     similarity_average_period=20
     similarity_mediator = SimilarityMediator(similarity_average_period,
                                              kp_min,kp_max,
-                                             size,color)
+                                             size,color,x_shift=x_shift)
 
 
     # -- final result:
@@ -298,19 +306,40 @@ if __name__ == "__main__":
 
         # (values below chosen to match waypoints of hard target)
         x1 = 300
-        x2 = 1200
+        x2 = int(width/2.0)-300
 
         color_active = (0,0,0) # black
         color_inactive = (0.8,0.8,0.8) # gray
+        size = 30
         
-        vertical_targets = get_vertical_targets(x1,x2,
+        vertical_targets = get_vertical_targets(x1,x2,size,
                                                 color_active,
                                                 color_inactive,
                                                 width,height)
-
+        
     else :
 
         vertical_targets = None
+
+    if ARROWS:
+
+        # middle of each border
+        arrow_positions = [ (width/4.0,0),
+                            (width/4.0,height),
+                            (0,height/2.0),
+                            (width/2.0,height/2.0) ]
+
+        # gray
+        arrows_color = (0.8,0.8,0.8) 
+
+        # in pixels
+        arrows_length = 200
+        
+        arrows = [ Arrow(p,
+                         arrows_length,
+                         arrows_color)
+                   for p in arrow_positions ]
+
         
     # ---------- cursor ---------- #
 
@@ -319,13 +348,13 @@ if __name__ == "__main__":
 
     # see cursors.py for code
     
-    size = 40
+    size = 60
     
     # 1 --- BasicCursor
     # A simple circle 
     
-    color = (0,1,0)
-    cursor = BasicCursor(size,color)
+    #color = (0,1,0)
+    #cursor = BasicCursor(size,color)
 
     # 2 --- VelocityCursor
     # A circle which color changes depending on the velocity
@@ -338,6 +367,14 @@ if __name__ == "__main__":
     #cursor = VelocityCursor(size,color_slow,color_fast,
     #                        velocity_threshold)
 
+    # 3 --- BoundedCursor
+    # A circle which can not move beyond the bounds
+    # (bounds only on horizontal axis)
+
+    bounds = [250,int(width/2.0)-250]
+    color = (0,1,0)
+    cursor = BoundedCursor(size,color,
+                           bounds)
     
     # ---------- experiment code, do not touch ---------- #
     
@@ -351,6 +388,7 @@ if __name__ == "__main__":
                             hard_target,
                             cursor,
                             vertical_targets,
+                            arrows,
                             data_file)
 
     gui = PacingAndLeading(experiment,dpi,
@@ -362,5 +400,5 @@ if __name__ == "__main__":
 
     experiment.save()
 
-    Experiment.plot_results(data_file)
+    #Experiment.plot_results(data_file)
 

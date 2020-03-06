@@ -71,20 +71,21 @@ class VerticalTarget :
 
 
 def get_vertical_targets(x1,x2,
+                         size,
                          color_active,
                          color_inactive,
                          width,height):
 
     vt_left= VerticalTarget(True,
                             True,
-                            10,
+                            size,
                             color_active,
                             color_inactive,
                             (x1,0))
 
     vt_right = VerticalTarget(False,
                               False,
-                              10,
+                              size,
                               color_active,
                               color_inactive,
                               (x2,0))

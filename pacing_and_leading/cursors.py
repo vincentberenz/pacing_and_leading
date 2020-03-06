@@ -18,7 +18,30 @@ class BasicCursor:
         cursor = world.cursor
         return cursor,self._size,self._color
 
+class BoundedCursor:
 
+    def __init__(self,size,color,bounds):
+        
+        self._size = size
+        self._color = color
+        self._bounds = bounds
+        
+    def __call__(self,world):
+
+        cursor = world.cursor
+
+        if cursor is None:
+            return cursor,self._size,self._color
+
+        cursor[0] = max(self._bounds[0],
+                        cursor[0])
+        cursor[0] = min(self._bounds[1],
+                        cursor[0])
+        
+        return cursor,self._size,self._color
+        
+        
+    
 class VelocityCursor:
 
     def __init__(self,
