@@ -68,6 +68,10 @@ if __name__ == "__main__":
 
     # if arrows true, arrows poining to the soft target are added
     ARROWS = True
+
+    # if true, similarity scores displayed
+    # on the terminal during runtime
+    CONSOLE = True
     
     # frequency of main program iteration
     frequency = 300
@@ -133,7 +137,7 @@ if __name__ == "__main__":
 
     similarity = Composite( ( (0.1,distance_similarity),
                               (0.5,weighted_velocity_similarity),
-                              (0.0,product_velocity_similarity) ) )
+                              (0.0,product_velocity_similarity) ) , console=CONSOLE )
 
     
     # ---------- hard target motion ---------- #
@@ -400,5 +404,8 @@ if __name__ == "__main__":
 
     experiment.save()
 
+    if CONSOLE:
+        similarity.exit()
+    
     #Experiment.plot_results(data_file)
 
