@@ -52,6 +52,16 @@ from ..pacing_and_leading import geometry
 
 if __name__ == "__main__":
 
+
+    # ---------- windows and size config ---------- #
+
+    # Looks like window size and pixels are not dealt in
+    # the same way on Mac and Ubuntu !
+
+    ## ubuntu ##
+    unit = 60
+    dpi = 100
+    
     # ---------- window and experiment config ---------- #
 
     # if True: everything displayed, including what the user
@@ -77,10 +87,9 @@ if __name__ == "__main__":
     frequency = 300
 
     # config of the window
-    width = 6000
-    height = 3000
+    width = unit*100
+    height = unit*50
     background = (1,1,1)
-    dpi=100
 
     # logging file. Currently only logging the
     # similarity (cf below)
@@ -161,9 +170,9 @@ if __name__ == "__main__":
     # has the target moving at
     # constant speed between predefined waypoints
     
-    waypoints = [ [300,200] , [int(width/2.0)-300,500] ]
-    velocity = 300.0
-    size = 60
+    waypoints = [ [5*unit,3*unit] , [int(width/2.0)-5*unit,8*unit] ]
+    velocity = 5*unit
+    size = unit
     color = (1,0,0)
     hard_target_display=DISPLAY_ALL
     waypoints_hard_target = WaypointsHardTarget(waypoints,
@@ -192,7 +201,7 @@ if __name__ == "__main__":
 
     # see soft_targets.py for code
     
-    size = 60
+    size = unit
     color = (1,1,0)
     soft_target_display=DISPLAY_ALL
 
@@ -248,7 +257,7 @@ if __name__ == "__main__":
 
     # see mediators.py for code
     
-    size = 60
+    size = unit
     color = (0,0,1)
     mediator_display=True
 
@@ -309,12 +318,12 @@ if __name__ == "__main__":
         # on the x axis in pixels
 
         # (values below chosen to match waypoints of hard target)
-        x1 = 300
-        x2 = int(width/2.0)-300
+        x1 = 5*unit
+        x2 = int(width/2.0)-5*unit
 
         color_active = (0,0,0) # black
         color_inactive = (0.8,0.8,0.8) # gray
-        size = 30
+        size = int(float(unit)/2.)
         
         vertical_targets = get_vertical_targets(x1,x2,size,
                                                 color_active,
@@ -337,7 +346,7 @@ if __name__ == "__main__":
         arrows_color = (0.8,0.8,0.8) 
 
         # in pixels
-        arrows_length = 200
+        arrows_length = 3*unit
         
         arrows = [ Arrow(p,
                          arrows_length,
@@ -352,7 +361,7 @@ if __name__ == "__main__":
 
     # see cursors.py for code
     
-    size = 60
+    size = unit
     
     # 1 --- BasicCursor
     # A simple circle 
@@ -375,7 +384,7 @@ if __name__ == "__main__":
     # A circle which can not move beyond the bounds
     # (bounds only on horizontal axis)
 
-    bounds = [250,int(width/2.0)-250]
+    bounds = [4*unit,int(width/2.0)-4*unit]
     color = (0,1,0)
     cursor = BoundedCursor(size,color,
                            bounds)
@@ -395,7 +404,8 @@ if __name__ == "__main__":
                             arrows,
                             data_file)
 
-    gui = PacingAndLeading(experiment,dpi,
+    gui = PacingAndLeading(unit,
+                           experiment,dpi,
                            hard_target_display=hard_target_display,
                            soft_target_display=soft_target_display,
                            mediator_display=mediator_display,

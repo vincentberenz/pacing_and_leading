@@ -7,6 +7,7 @@ from matplotlib import animation
 class PacingAndLeading:
 
     def __init__(self,
+                 unit,
                  experiment,
                  dpi,
                  hard_target_display=False,
@@ -15,6 +16,8 @@ class PacingAndLeading:
                  vertical_targets_display=True,
                  arrows_display=4):
 
+        self._unit = unit
+        
         # creating the main figure
         figsize = (experiment.width/dpi ,
                    experiment.height/dpi)
@@ -156,7 +159,7 @@ class PacingAndLeading:
                                       arrow.position[1],
                                       arrow.delta[0],
                                       arrow.delta[1],
-                                      width=20)
+                                      width=int(float(self._unit)/3.))
             display_arrow.set_color(arrow.color)
             return display_arrow
         
