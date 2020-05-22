@@ -70,7 +70,11 @@ class Experiment:
 
         if arrows:
 
-            self._arrows = [ display.Arrow("arrow_"+str(index),arrow)
+            self._arrows = [ display.Arrow("arrow_"+str(index),
+                                           arrow.length,
+                                           arrow.width,
+                                           arrow.tip_size,
+                                           arrow)
                              for index,arrow in enumerate(arrows) ]
 
         else :

@@ -27,13 +27,19 @@ class _Arrow:
                  name,
                  position,
                  delta,
-                 color):
+                 color,
+                 length,
+                 width,
+                 tip_size):
 
         self.name = name
         self.position = position
         self.delta = delta
         self.color = color
-
+        self.width = width
+        self.tip_size = tip_size
+        self.length = length
+        
 class Circle :
 
     """ generic class for all moving circles in the world
@@ -114,6 +120,9 @@ class Arrow:
 
     def __init__(self,
                  name,
+                 length,
+                 width,
+                 tip_size,
                  update_function):
 
         self._name = name
@@ -121,13 +130,19 @@ class Arrow:
         self._position = (0,0)
         self._delta = (0,0)
         self._color = None
-
+        self._width = width
+        self._tip_size = tip_size
+        self._length = length
+        
     def get(self):
 
         return _Arrow(self._name,
                       self._position,
                       self._delta,
-                      self._color)
+                      self._color,
+                      self._length,
+                      self._width,
+                      self._tip_size)
         
     def update(self,world):
 

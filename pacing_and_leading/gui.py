@@ -1,4 +1,4 @@
-import copy
+import copy,math
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
@@ -65,8 +65,20 @@ class PacingAndLeading:
             return rectangle
 
         def _gen_arrow():
-            arrow = plt.arrow(0,0,0,0)
-            self._axis.add_patch(arrow)
+            # could not display FancyArrow on Mac, replacing
+            # by a line (thin Rectangle) with a circle at its tip
+            class Arrow:
+                def __init__(self,center,axis):
+                    self.tip = plt.Circle(center,0,fc="white")
+                    self.rectangle = plt.Rectangle((0,experiment.height),
+                                                   3,
+                                                   experiment.height,
+                                                   angle=0.0,
+                                                   fill=True)
+                    axis.add_patch(self.rectangle)
+                    # ignoring the tip for now
+                    #axis.add_patch(self.tip)
+            arrow = Arrow(self._center,self._axis)
             return arrow
             
         self._hard_target = _gen_circle(hard_target_display)
@@ -141,37 +153,44 @@ class PacingAndLeading:
         list( map (lambda vt,dvt : vertical_target_draw(vt,dvt),
                    vertical_targets, self._draw_vertical_targets) )
 
-        def remove_arrows(axis):
-            run = True
-            while run:
-                rm_patch = None
-                for patch in axis.patches:
-                    if patch.__class__.__name__=="FancyArrow":
-                        rm_patch = patch
-                        break
-                if rm_patch is None:
-                    run = False
-                else :
-                    axis.patches.remove(patch)
+        def arrow_draw(arrow,
+                       display_arrow):
 
-        def arrow_draw(arrow):
-            display_arrow = plt.arrow(arrow.position[0],
-                                      arrow.position[1],
-                                      arrow.delta[0],
-                                      arrow.delta[1],
-                                      width=int(float(self._unit)/3.))
-            display_arrow.set_color(arrow.color)
-            return display_arrow
+            # could not get matplotlib to draw
+            # dynamic arrows on mac, replacing by
+            # a line (Rectangle) with a circle at the tip
+
+            x = [arrow.position[0],arrow.position[1]]
+            y = [p+d for p,d
+                 in zip(arrow.position,arrow.delta)]
+
+            display_arrow.rectangle.set_xy(x)
+            display_arrow.rectangle.set_height(arrow.length)
+            display_arrow.rectangle.set_width(arrow.width)
+            display_arrow.rectangle.fill=True
+            display_arrow.rectangle.set_color(arrow.color)
+
+            rotated = [+arrow.delta[1],-arrow.delta[0]]
+            
+            display_arrow.rectangle.angle = 57.2958*math.atan2(rotated[1],
+                                                               rotated[0])
+
+            display_arrow.tip.center = y
+            display_arrow.tip.set_radius(arrow.tip_size)
+            display_arrow.tip.fill = True
+            display_arrow.tip.set_color(arrow.color)
+
+            return display_arrow.rectangle,display_arrow.tip
         
-        # arrows can not be updated, we need to recreate them 
-        remove_arrows(self._axis)
-        self._draw_arrows = list( map( lambda arrow: arrow_draw(arrow),
-                                       arrows ) )
-        
+        draw_arrows = []
+        for arrow,display_arrow in zip(arrows,self._draw_arrows):
+            #draw_arrows.extend(arrow_draw(arrow,display_arrow))
+            # ignoring the tip for now
+            draw_arrows.extend([arrow_draw(arrow,display_arrow)[0]])
+            
         r  = [c for c in  self._draw_circles
               if c is not None] + [vt for vt in self._draw_vertical_targets
-                                   if vt is not None] + [a for a in self._draw_arrows
-                                                         if a is not None]
+                                   if vt is not None] +draw_arrows
 
         return r
         

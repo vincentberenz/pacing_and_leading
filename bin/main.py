@@ -59,8 +59,12 @@ if __name__ == "__main__":
     # the same way on Mac and Ubuntu !
 
     ## ubuntu ##
-    unit = 60
-    dpi = 100
+    #unit = 60
+    #dpi = 100
+
+    # mac ?
+    unit = 10
+    dpi = 50
     
     # ---------- window and experiment config ---------- #
 
@@ -345,14 +349,21 @@ if __name__ == "__main__":
         # gray
         arrows_color = (0.8,0.8,0.8) 
 
-        # in pixels
         arrows_length = 3*unit
+        arrows_width = max(1,int(float(unit/4.0)))
+        arrows_tip_size = max(1,int(float(unit/2.0)))
+        
         
         arrows = [ Arrow(p,
                          arrows_length,
+                         arrows_width,
+                         arrows_tip_size,
                          arrows_color)
                    for p in arrow_positions ]
 
+    else:
+
+        arrows = []
         
     # ---------- cursor ---------- #
 
