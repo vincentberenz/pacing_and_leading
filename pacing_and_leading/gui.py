@@ -43,6 +43,9 @@ class PacingAndLeading:
         # initial cursor position
         self._cursor_position = self._center
 
+        # remove axes
+        plt.axis('off')
+
         # creating the matplotlib circles to draw.
         # if display is False, no circle is drawn
         def _gen_circle(display):

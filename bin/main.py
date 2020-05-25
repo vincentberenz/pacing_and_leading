@@ -62,9 +62,9 @@ if __name__ == "__main__":
     #unit = 60
     #dpi = 100
 
-    # mac ?
-    unit = 10
-    dpi = 50
+    # mac ##
+    unit = 15
+    dpi = 80
     
     # ---------- window and experiment config ---------- #
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # should not see (hard target, soft target)
     # if False : only the cursor and the mediator are shown,
     # i.e mode that should be used for experiment
-    DISPLAY_ALL=True
+    DISPLAY_ALL=False
     
     # to be used in future for logging
     USER_ID = 0
