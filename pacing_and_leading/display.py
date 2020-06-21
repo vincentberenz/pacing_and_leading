@@ -1,6 +1,5 @@
 import copy
 
-
 class _Circle:
 
     def __init__(self,name,position,size,color,x_shift=0):

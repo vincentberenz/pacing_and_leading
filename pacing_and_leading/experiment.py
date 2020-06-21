@@ -1,5 +1,5 @@
-from ..pacing_and_leading import display
-from ..pacing_and_leading import geometry
+from . import display
+from . import geometry
 
 class _World:
 

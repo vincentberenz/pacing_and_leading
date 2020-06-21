@@ -1,14 +1,16 @@
-from ..pacing_and_leading.gui import PacingAndLeading
-from ..pacing_and_leading.mediators import *
-from ..pacing_and_leading.hard_targets import *
-from ..pacing_and_leading.soft_targets import *
-from ..pacing_and_leading.arrow import *
-from ..pacing_and_leading.vertical_targets import get_vertical_targets
-from ..pacing_and_leading.cursors import *
-from ..pacing_and_leading.similarities import *
-from ..pacing_and_leading.experiment import Experiment
-from ..pacing_and_leading.composite import Composite
-from ..pacing_and_leading import geometry
+#!/usr/bin/env python3
+
+from pacing_and_leading.gui import PacingAndLeading
+from pacing_and_leading.mediators import *
+from pacing_and_leading.hard_targets import *
+from pacing_and_leading.soft_targets import *
+from pacing_and_leading.arrow import *
+from pacing_and_leading.vertical_targets import get_vertical_targets
+from pacing_and_leading.cursors import *
+from pacing_and_leading.similarities import *
+from pacing_and_leading.experiment import Experiment
+from pacing_and_leading.composite import Composite
+from pacing_and_leading import geometry
 
 
 # What this is about
@@ -99,60 +101,7 @@ if __name__ == "__main__":
     # similarity (cf below)
     data_file = "/tmp/pacing_and_leading"
 
-    
-    # ---------- similarity computation ---------- #
 
-    # see similarities.py for code
-    
-    # compute the similarity between the cursor motion and
-    # the hard target motion (see below). Score between 0 (dissimilar)
-    # and 1 (similar)
-
-    # the (secret) goal of the program is to increase the
-    # similarity over time, i.e. "tricking" the user into
-    # moving the cursor in a manner similar the hard target
-    # moves.
-
-    # final score is a mix of :
-
-    # 1 --- DistanceSimilarity
-
-    # the closer the cursor to the hard target,
-    # the higher the similarity
-
-    max_distance = geometry.norm([width,height])
-    distance_similarity = DistanceSimilarity(max_distance)
-    
-    # 2 --- WeightedVelocitySimilarity
-    
-    # is a weighted score between
-    # difference in norm and direction of the velocity
-
-
-    weight_norm=0.7
-    weight_angle=0.3
-    weighted_velocity_similarity=WeightedVelocitySimilarity(weight_angle=weight_angle,
-                                                            weight_norm=weight_norm)
-
-    # 3 --- ProductVelocitySimilarity
-    
-    # is the product between
-    # similarity of the velocities norm and similarity
-    # in direction of velocities
-    
-    weighted_product_velocity = 0.0
-    product_velocity_similarity=ProductVelocitySimilarity()
-
-
-    # --- final result is a linear combination
-    # of all similarities functions, 
-    # -> change the weights for fine tuning
-
-    similarity = Composite( ( (0.1,distance_similarity),
-                              (0.5,weighted_velocity_similarity),
-                              (0.0,product_velocity_similarity) ) , console=CONSOLE )
-
-    
     # ---------- hard target motion ---------- #
 
     # the hard target is the circle which motion
@@ -173,22 +122,54 @@ if __name__ == "__main__":
     
     # has the target moving at
     # constant speed between predefined waypoints
-    
-    waypoints = [ [5*unit,3*unit] , [int(width/2.0)-5*unit,8*unit] ]
-    velocity = 5*unit
+
+    hard_target_point1 = [5*unit,3*unit]
+    hard_target_point2 = [int(width/2.0)-5*unit,8*unit]
+    hard_target_velocity = 5*unit
     size = unit
     color = (1,0,0)
     hard_target_display=DISPLAY_ALL
-    waypoints_hard_target = WaypointsHardTarget(waypoints,
-                                                velocity,
-                                                size=size,
-                                                color=color)
+    line_hard_target = LineHardTarget(hard_target_point1,
+                                      hard_target_point2,
+                                      hard_target_velocity,
+                                      size=size,
+                                      color=color)
 
     # --- final result
 
-    hard_target = Composite( [ (1.0,waypoints_hard_target) ] )
+    hard_target = Composite( [ (1.0,line_hard_target) ] )
 
     
+    # ---------- similarity computation ---------- #
+
+    # see similarities.py for code
+    
+    # compute the similarity between the cursor motion and
+    # the hard target motion (see below). Score between 0 (dissimilar)
+    # and 1 (similar)
+
+    # the (secret) goal of the program is to increase the
+    # similarity over time, i.e. "tricking" the user into
+    # moving the cursor in a manner similar the hard target
+    # moves.
+
+    max_distance = geometry.norm([width,height])
+
+    line_distance_similarity = LineDistanceSimilarity(hard_target_point1,
+                                                      hard_target_point2,
+                                                      max_distance/4.0)
+    
+    velocity_norm_similarity = VelocityNormSimilarity(hard_target_velocity)
+    
+    velocity_line_similarity = VelocityLineSimilarity(hard_target_point1,
+                                                      hard_target_point2,
+                                                      hard_target_velocity/3.0)
+    
+    similarity = Composite( [ (1./3.,line_distance_similarity),
+                              (1./3.,velocity_norm_similarity),
+                              (1./3.,velocity_line_similarity) ] , console=CONSOLE )
+    
+  
     # ---------- soft target motion ---------- #
 
     # The soft target is some intermediate between
@@ -209,44 +190,14 @@ if __name__ == "__main__":
     color = (1,1,0)
     soft_target_display=DISPLAY_ALL
 
-    # soft target is a mix of:
-    
-    # 1 --- TimeDriftingSoftTarget
-    
-    # motion of the soft target
-    # is first purely reactive, then becomes feed forward
-    # as time goes by. change "duration" to make this transition
-    # slower or faster
-    
-    duration = 5
-    time_drifting_soft_target = TimeDriftingSoftTarget(duration,
-                                                       size=size,
-                                                       color=color)
-
-    # 2 --- SimilaritySoftTarget
-    
-    # motion of the soft target
-    # is more feedforward if the motion of the cursor is similar
-    # to the one of the hard target, and more reactive if dissimilar.
-
-    # if "invert" is true, then the opposite is applied:
-    # the more similar, the more reactive
-    
-    # Optionally, not the current similarity score is used, but a
-    # value averaging the similarity over x seconds (similarity_average_period,
-    # which can be set to None for no averaging)
-
-    similarity_average_period=20 # the similarity averaged over 20 iterations is used
+    similarity_average_period=5 # the similarity averaged over 20 iterations is used
     invert = False
     similarity_soft_target = SimilaritySoftTarget(similarity_average_period,
                                                   invert,
                                                   size=size,
                                                   color=color)
 
-    # --- final result, change weights for fine tuning
-
-    soft_target = Composite( ( (0.5,time_drifting_soft_target),
-                               (0.5,similarity_soft_target) ) )
+    soft_target = similarity_soft_target
 
     
     # ---------- mediator ---------- #

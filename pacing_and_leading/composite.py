@@ -1,5 +1,5 @@
 import copy,curses
-from ..pacing_and_leading import geometry
+from . import geometry
 
 class Composite:
 

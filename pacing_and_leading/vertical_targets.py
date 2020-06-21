@@ -1,7 +1,6 @@
 import time,math
-from ..pacing_and_leading import geometry
-from ..pacing_and_leading import control
-    
+from . import geometry
+from . import control
 
 class VerticalTarget :
 

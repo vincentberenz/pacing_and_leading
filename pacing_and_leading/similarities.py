@@ -1,6 +1,161 @@
-from ..pacing_and_leading import control
-from ..pacing_and_leading import geometry
+import numpy as np
+import math
+from . import control
+from . import geometry
 
+class ConstantSimilarity:
+
+    def __init__(self,
+                 value):
+        self._value = value
+
+    def __call__(self,_,__):
+
+        return self._value
+
+class LineDistanceSimilarity:
+
+    def __init__(self,
+                 point1,
+                 point2,
+                 max_distance):
+    
+        self._max_distance = max_distance
+        self._p1 = np.array(point1)
+        self._p2 = np.array(point2)
+
+    def _line_distance(self,cursor):
+        p = np.array(cursor)
+        n1 = np.linalg.norm(self._p2-self._p1)
+        n2 = np.linalg.norm(np.cross(self._p2-self._p1, self._p1-p))
+        return n2/n1
+
+    def __call__(self,cursor,_):
+
+        if cursor is None:
+            return None
+
+        distance = self._line_distance(cursor)
+        if distance > self._max_distance:
+            return 0.
+        distance_score =  1.0 - distance / self._max_distance
+
+        return distance_score
+
+    
+class VelocityNormSimilarity:
+
+    def __init__(self,
+                 velocity):
+        self._velocity = velocity
+        self._velocity_cursor = control.Velocity()
+
+    def __call__(self,cursor,_):
+
+        if cursor is None:
+            return None
+
+        velocity_cursor = self._velocity_cursor.get(cursor)
+        
+        if velocity_cursor is None:
+            return None
+            
+        speed = geometry.norm(velocity_cursor)
+        if speed > self._velocity:
+            speed_score = self._velocity / speed
+        else:
+            speed_score = speed / self._velocity 
+
+        return speed_score
+
+class VelocityLineSimilarity:
+
+    def __init__(self,
+                 point1,
+                 point2,
+                 min_velocity):
+        self._vector = [p2-p1
+                        for p2,p1 in zip(point1,point2)]
+        self._min_velocity = min_velocity
+        self._velocity_cursor = control.Velocity()
+
+    def __call__(self,cursor,_):
+
+        if cursor is None:
+            return None
+
+        velocity_cursor = self._velocity_cursor.get(cursor)
+        
+        if velocity_cursor is None:
+            return None
+
+        speed = geometry.norm(velocity_cursor)
+        if(speed<self._min_velocity):
+            return 0
+        
+        angle = abs(math.acos(geometry.dot(velocity_cursor,
+                                           self._vector)))
+        if angle > math.pi/2 :
+            angle_score = 1.0 - (math.pi-angle) / (math.pi/2.0)
+        else:
+            angle_score = 1.0 - angle / (math.pi/2.0)
+
+        return angle_score
+    
+    
+        
+
+class LineSimilarity:
+
+    def __init__(self,
+                 point1,
+                 point2,
+                 max_distance,
+                 velocity):
+        self._max_distance = max_distance
+        self._p1 = np.array(point1)
+        self._p2 = np.array(point2)
+        self._velocity = velocity
+        self._vector = [p2-p1
+                        for p2,p1 in zip(point1,point2)]
+        self._velocity_cursor = control.Velocity()
+
+    def _line_distance(self,cursor):
+        p = np.array(cursor)
+        n1 = np.linalg.norm(self._p2-self._p1)
+        n2 = np.linalg.norm(np.cross(self._p2-self._p1, self._p1-p))
+        return n2/n1
+
+    def __call__(self,cursor,_):
+
+        if cursor is None:
+            return None
+
+        distance = self._line_distance(cursor)
+        distance = min(distance,self._max_distance)
+        distance_score =  1.0 - distance / self._max_distance
+
+        velocity_cursor = self._velocity_cursor.get(cursor)
+        
+        if velocity_cursor is None:
+            return None
+            
+        angle = abs(math.acos(geometry.dot(velocity_cursor,
+                                           self._vector)))
+        if angle > math.pi/2 :
+            angle_score = 1.0 - (math.pi-angle) / (math.pi/2.0)
+        else:
+            angle_score = 1.0 - angle / (math.pi/2.0)
+
+        speed = geometry.norm(velocity_cursor)
+        if speed > self._velocity:
+            speed_score = self._velocity / speed
+        else:
+            speed_score = speed / self._velocity 
+
+        return (distance_score+angle_score+speed_score)/3.0
+
+    
 class DistanceSimilarity:
 
     def __init__(self,max_distance):

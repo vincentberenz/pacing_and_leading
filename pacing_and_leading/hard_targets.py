@@ -1,7 +1,6 @@
 import time,math
-from ..pacing_and_leading import geometry
-from ..pacing_and_leading import control
-
+from . import geometry
+from . import control
 
 class WaypointsHardTarget :
 
@@ -47,3 +46,22 @@ class WaypointsHardTarget :
                           for pw,v in zip(self._previous_waypoint,total_v)]
 
         return self._position,self._size,self._color
+
+
+class LineHardTarget:
+
+    def __init__(self,
+                 point1,
+                 point2,
+                 velocity,
+                 size=None,
+                 color=None):
+
+        self._point1 = point1
+        self._point2 = point2
+        self._waypoints = WaypointsHardTarget([point1,point2],
+                                              velocity,size=size,color=color)
+
+    def __call__(self,world):
+
+        return self._waypoints(world)

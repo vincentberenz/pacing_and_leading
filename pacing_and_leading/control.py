@@ -18,7 +18,7 @@ def linear_controller( previous_time,
 
 class Velocity:
 
-    def __init__(self,estimation_period=0.2,memory=1000):
+    def __init__(self,estimation_period=0.5,memory=1000):
         self._period = estimation_period
         self._stamped_positions = deque([None
                                          for _ in range(memory)],memory)
