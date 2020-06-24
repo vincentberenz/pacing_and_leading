@@ -63,12 +63,19 @@ def _parse_args(args):
     if "show" in args:
         show = True
 
-    return console,show
+    duration = 4*60 # in seconds 
+    for arg in args:
+        try:
+            duration = int(arg)
+        except:
+            pass
+        
+    return console,show,duration
 
 
 if __name__ == "__main__":
 
-    console,show = _parse_args(sys.argv[1:])
+    console,show,duration = _parse_args(sys.argv[1:])
     
 
     # ---------- windows and size config ---------- #
@@ -365,7 +372,8 @@ if __name__ == "__main__":
     
     # ---------- experiment code, do not touch ---------- #
     
-    experiment = Experiment(frequency,
+    experiment = Experiment(duration,
+                            frequency,
                             width,
                             height,
                             background,
@@ -383,7 +391,10 @@ if __name__ == "__main__":
                            soft_target_display=soft_target_display,
                            mediator_display=mediator_display,
                            vertical_targets_display=VERTICAL_TARGETS)
-    gui.run()
+    try:
+        gui.run()
+    except TimeoutError as e:
+        print("experiment finished")
 
     experiment.save()
 

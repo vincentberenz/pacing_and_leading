@@ -1,3 +1,4 @@
+import time
 from . import display
 from . import geometry
 from . import log
@@ -16,6 +17,7 @@ class _World:
 class Experiment:
 
     def __init__(self,
+                 duration,
                  frequency,
                  width,
                  height,
@@ -28,6 +30,7 @@ class Experiment:
                  vertical_targets,
                  arrows):
 
+        
         # frequency of display update
         self.frequency = frequency
         
@@ -80,12 +83,22 @@ class Experiment:
         else :
 
             self._arrows = []
+
+        # time of start
+        self._time_start = time.time()
+
+        # update will throw an exception
+        # once time passed
+        self._duration = duration
         
         # for logging in a file on exit
         self._log = log.Log()
         
     def update(self,cursor):
 
+        if(time.time()-self._time_start) > self._duration:
+            raise TimeoutError("experiment finished")
+        
         # computes the attributes of all circles
         # for an iteration
 
@@ -102,7 +115,7 @@ class Experiment:
                                  for vb in self._vertical_bars]
         
         # for logging in a file on exit
-        self._log.set(cursor,world.soft_target,
+        self._log.set(time.time()-self._time_start,cursor,world.soft_target,
                       world.hard_target,world.similarity)
         
         # each circle calls its own update function, to

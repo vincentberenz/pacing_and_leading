@@ -1,4 +1,4 @@
-import time,os
+import time,os,pickle
 
 FILENAME = "pacing_and_leading.save"
 
@@ -16,26 +16,14 @@ class LogItem:
         self.hard_target = hard_target
         self.similarity = similarity
 
-    def __repr__(self):
-        return str([repr(getattr(self,attr))
-                    for attr in self.__slots__])
-
-
-    def __eval__(self,str):
-        ar = eval(str)
-        for a,attr in zip(ar,self.__slots__):
-            setattr(self,attr,a)
-
-
-
 class Log:
 
     def __init__(self):
         self.data = []
 
-    def set(self,cursor,soft_target,
+    def set(self,t,cursor,soft_target,
             hard_target,similarity):
-        self.data.append(LogItem(time.time(),
+        self.data.append(LogItem(t,
                                  cursor,
                                  soft_target,
                                  hard_target,
@@ -45,18 +33,16 @@ class Log:
     def save(self,file_path=None):
         if file_path is None:
             file_path = os.getcwd()+os.sep+FILENAME
-        with open(file_path,"w+") as f:
-            f.write(repr(self.data))
+        with open(file_path,"wb") as f:
+            pickle.dump(self,f)
         return file_path
         
     @classmethod
     def load(cls,file_path=None):
         if file_path is None:
             file_path = os.getcwd()+os.sep+FILENAME
-        with open(file_path,"r") as f:
-            content  = f.read()
-        instance = Log()
-        instance.data  = eval(content)
+        with open(file_path,"rb") as f:
+            instance = pickle.load(f)
         return instance
         
         
