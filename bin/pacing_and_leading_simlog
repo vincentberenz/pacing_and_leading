@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+
+import sys
+import matplotlib.plot as plt
+from pacing_and_leading.log import Log
+
+
+log = Log.load()
+
+start_time = log.data[0].time
+
+x = [l.time-start_time for l in log.data]
+y = [l.similarity for l in log.data]
+
+plt.plot(x,y)
+plt.show()

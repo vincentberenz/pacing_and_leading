@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from pacing_and_leading.gui import PacingAndLeading
 from pacing_and_leading.mediators import *
 from pacing_and_leading.hard_targets import *
@@ -52,8 +53,23 @@ from pacing_and_leading import geometry
 # cursor/hard target as function of time
 #
 
+def _parse_args(args):
+
+    console = False
+    if "console" in args:
+        console = True
+
+    show = False
+    if "show" in args:
+        show = True
+
+    return console,show
+
+
 if __name__ == "__main__":
 
+    console,show = _parse_args(sys.argv[1:])
+    
 
     # ---------- windows and size config ---------- #
 
@@ -74,7 +90,7 @@ if __name__ == "__main__":
     # should not see (hard target, soft target)
     # if False : only the cursor and the mediator are shown,
     # i.e mode that should be used for experiment
-    DISPLAY_ALL=False
+    DISPLAY_ALL=show
     
     # to be used in future for logging
     USER_ID = 0
@@ -87,7 +103,7 @@ if __name__ == "__main__":
 
     # if true, similarity scores displayed
     # on the terminal during runtime
-    CONSOLE = True
+    CONSOLE = console
     
     # frequency of main program iteration
     frequency = 300
@@ -96,10 +112,6 @@ if __name__ == "__main__":
     width = unit*100
     height = unit*50
     background = (1,1,1)
-
-    # logging file. Currently only logging the
-    # similarity (cf below)
-    data_file = "/tmp/pacing_and_leading"
 
 
     # ---------- hard target motion ---------- #
@@ -363,8 +375,7 @@ if __name__ == "__main__":
                             hard_target,
                             cursor,
                             vertical_targets,
-                            arrows,
-                            data_file)
+                            arrows)
 
     gui = PacingAndLeading(unit,
                            experiment,dpi,
@@ -379,5 +390,4 @@ if __name__ == "__main__":
     if CONSOLE:
         similarity.exit()
     
-    #Experiment.plot_results(data_file)
 

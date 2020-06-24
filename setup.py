@@ -11,6 +11,7 @@ setup(name = "pacing_and_leading",
       description="pacing and leading experiment",
       author="Vincent Berenz",
       author_email="vberenz@tuebingen.mpg.de",
-      scripts=['bin/pacing_and_leading'],
+      scripts=['bin/pacing_and_leading',
+               'bin/pacing_and_leading_simlog'],
       install_requires = ["matplotlib","numpy"])
 

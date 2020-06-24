@@ -1,5 +1,6 @@
 from . import display
 from . import geometry
+from . import log
 
 class _World:
 
@@ -25,8 +26,7 @@ class Experiment:
                  hard_target,
                  cursor,
                  vertical_targets,
-                 arrows,
-                 data_file):
+                 arrows):
 
         # frequency of display update
         self.frequency = frequency
@@ -81,11 +81,8 @@ class Experiment:
 
             self._arrows = []
         
-        # for logging on exit
-        self._similarities = []
-        self._distances = []
-        self._data_file = data_file
-        
+        # for logging in a file on exit
+        self._log = log.Log()
         
     def update(self,cursor):
 
@@ -104,11 +101,9 @@ class Experiment:
         world.vertical_targets = [vb.get_source()
                                  for vb in self._vertical_bars]
         
-        # for plotting on exit
-        self._similarities.append(world.similarity)
-        if world.cursor is not None and world.hard_target is not None:
-            self._distances.append(geometry.distance(world.cursor,
-                                                     world.hard_target))
+        # for logging in a file on exit
+        self._log.set(cursor,world.soft_target,
+                      world.hard_target,world.similarity)
         
         # each circle calls its own update function, to
         # update position,size and color
@@ -135,41 +130,6 @@ class Experiment:
     
     def save(self):
 
-        print("saving results in",self._data_file)
-        
-        similarities = [s for s in self._similarities
-                        if s is not None]
-
-        with open(self._data_file,"w+") as f:
-            f.write(repr(similarities))
-            f.write('\n')
-            f.write(repr(self._distances))
+        file_path = self._log.save()
+        print("saved results in",file_path)
             
-    @classmethod
-    def plot_results(self,data_file):
-
-        with open(data_file,"r") as f:
-            data = f.read()
-
-        similarities,distances = data.split('\n')
-            
-        similarities = eval(similarities)
-        distances = eval(distances)
-
-        import matplotlib.pyplot as plt
-
-        x = range(len(similarities))
-        y = similarities
-
-        plt.scatter(x,y)
-        plt.title("similarities")
-        plt.show()
-
-        x = range(len(distances))
-        y = distances
-
-        plt.scatter(x,y)
-        plt.title("distances")
-        plt.show()
-
-        
